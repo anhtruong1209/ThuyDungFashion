@@ -1,0 +1,90 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-rgb: 255, 255, 255;
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: rgb(var(--background-rgb));
+  font-family: 'Montserrat', sans-serif;
+}
+
+.playfair {
+  font-family: 'Playfair Display', serif;
+}
+
+@layer components {
+  .nav-link {
+    @apply text-sm font-medium uppercase tracking-wider hover:text-dior-gold transition-colors;
+  }
+
+  .btn-primary {
+    @apply bg-dior-black text-white px-6 py-3 uppercase tracking-wider text-sm font-medium hover:bg-dior-gold transition-colors;
+  }
+
+  .container-custom {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .section-title {
+    @apply playfair text-3xl md:text-4xl font-medium mb-8 text-center;
+  }
+  
+  .nav-transparent {
+    @apply bg-transparent;
+  }
+  
+  .home-slider {
+    height: 100vh;
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .slider-section {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    opacity: 0;
+    transition: opacity 1s ease-in-out;
+    z-index: 10;
+  }
+  
+  .slider-section.active {
+    opacity: 1;
+    z-index: 20;
+  }
+  
+  /* Split screen hover effects */
+  .split-screen-section {
+    position: relative;
+  }
+  
+  .split-screen-section .shop-now {
+    position: relative;
+    display: inline-block;
+  }
+  
+  .split-screen-section .shop-now::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 1px;
+    bottom: -2px;
+    left: 0;
+    background-color: currentColor;
+    transition: width 0.3s ease-in-out;
+  }
+  
+  .split-screen-section:hover .shop-now::after {
+    width: 100%;
+  }
+} 
