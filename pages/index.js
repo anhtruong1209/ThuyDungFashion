@@ -1,122 +1,160 @@
+import Head from 'next/head';
+import { useRef, useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useState, useRef, useEffect } from 'react';
 import Footer from '../components/Footer';
 
 export default function Home() {
-  const videoRef1 = useRef(null);
-  const videoRef2 = useRef(null);
-  const [isHoveringLeft, setIsHoveringLeft] = useState(false);
-  const [isHoveringRight, setIsHoveringRight] = useState(false);
+  const fashionVideoRef = useRef(null);
+  const fragranceVideoRef = useRef(null);
   
-  // Pause videos initially
+  const [isFashionHovered, setIsFashionHovered] = useState(false);
+  const [isFragranceHovered, setIsFragranceHovered] = useState(false);
+  const [isPageLoaded, setIsPageLoaded] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isScrolled, setIsScrolled] = useState(false);
+
   useEffect(() => {
-    if (videoRef1.current) {
-      videoRef1.current.pause();
-    }
-    if (videoRef2.current) {
-      videoRef2.current.pause();
-    }
+    // Load xong thì mới hiện logo
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+      // Đợi overlay loading biến mất rồi mới hiện logo
+      setTimeout(() => {
+        setIsPageLoaded(true);
+      }, 800);
+    }, 1500);
+    
+    // Add scroll handler
+    const handleScroll = () => {
+      if (window.scrollY > 10) {
+        setIsScrolled(true);
+      } else {
+        setIsScrolled(false);
+      }
+    };
+    
+    window.addEventListener('scroll', handleScroll);
+    
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('scroll', handleScroll);
+    };
   }, []);
 
-  // Handle mouse enter/leave for left section
-  const handleMouseEnterLeft = () => {
-    setIsHoveringLeft(true);
-    if (videoRef1.current) {
-      videoRef1.current.play();
+  const handleFashionMouseEnter = () => {
+    setIsFashionHovered(true);
+    if (fashionVideoRef.current) {
+      fashionVideoRef.current.play();
     }
   };
 
-  const handleMouseLeaveLeft = () => {
-    setIsHoveringLeft(false);
-    if (videoRef1.current) {
-      videoRef1.current.pause();
+  const handleFashionMouseLeave = () => {
+    setIsFashionHovered(false);
+    if (fashionVideoRef.current) {
+      fashionVideoRef.current.pause();
     }
   };
 
-  // Handle mouse enter/leave for right section
-  const handleMouseEnterRight = () => {
-    setIsHoveringRight(true);
-    if (videoRef2.current) {
-      videoRef2.current.play();
+  const handleFragranceMouseEnter = () => {
+    setIsFragranceHovered(true);
+    if (fragranceVideoRef.current) {
+      fragranceVideoRef.current.play();
     }
   };
 
-  const handleMouseLeaveRight = () => {
-    setIsHoveringRight(false);
-    if (videoRef2.current) {
-      videoRef2.current.pause();
+  const handleFragranceMouseLeave = () => {
+    setIsFragranceHovered(false);
+    if (fragranceVideoRef.current) {
+      fragranceVideoRef.current.pause();
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* Split screen container */}
-      <div className="h-screen flex flex-col md:flex-row overflow-hidden">
-        {/* Left section - Fashion & Accessories */}
-        <Link 
-          href="/fashion-accessories" 
-          className="split-screen-section relative h-1/2 md:h-full w-full md:w-1/2"
-          onMouseEnter={handleMouseEnterLeft}
-          onMouseLeave={handleMouseLeaveLeft}
-        >
-          <div className="absolute inset-0 bg-black/30 z-10"></div>
-          <video 
-            ref={videoRef1}
-            className="absolute w-full h-full object-cover"
-            muted 
-            loop
-            playsInline
-          >
-            <source src="/videos/2.webm" type="video/webm" />
-            <source src="/videos/2.mp4" type="video/mp4" />
-            Your browser does not support the video tag.
-          </video>
-          
-          <div className="absolute inset-0 flex flex-col items-center justify-center z-20 text-center">
-            <div className="w-full px-4 absolute bottom-20">
-              <h2 className="playfair text-2xl md:text-4xl text-white mb-6">Fashion & Accessories</h2>
-              <span className="shop-now text-white text-sm uppercase tracking-widest hover:text-dior-gold transition-colors">
-                Shop now
-              </span>
-            </div>
-          </div>
-        </Link>
+    <div className="min-h-screen relative">
+      <Head>
+        <title>ThuyDung Fashion | Thời trang cao cấp</title>
+        <meta name="description" content="Thời trang cao cấp ThuyDung - Khám phá bộ sưu tập thời trang độc quyền" />
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
 
-        {/* Right section - Fragrance & Beauty */}
-        <Link 
-          href="/fragrance-beauty" 
-          className="split-screen-section relative h-1/2 md:h-full w-full md:w-1/2"
-          onMouseEnter={handleMouseEnterRight}
-          onMouseLeave={handleMouseLeaveRight}
-        >
-          <div className="absolute inset-0 bg-black/30 z-10"></div>
-          <video 
-            ref={videoRef2}
-            className="absolute w-full h-full object-cover"
-            muted 
-            loop
-            playsInline
-          >
-            <source src="/videos/3.webm" type="video/webm" />
-            <source src="/videos/3.mp4" type="video/mp4" />
-            Your browser does not support the video tag.
-          </video>
-          
-          <div className="absolute inset-0 flex flex-col items-center justify-center z-20 text-center">
-            <div className="w-full px-4 absolute bottom-20">
-              <h2 className="playfair text-2xl md:text-4xl text-white mb-6">Fragrance & Beauty</h2>
-              <span className="shop-now text-white text-sm uppercase tracking-widest hover:text-dior-gold transition-colors">
-                Shop now
-              </span>
-            </div>
-          </div>
-        </Link>
-
-        {/* Logo overlay */}
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30">
-          <h1 className="playfair text-5xl md:text-7xl text-white text-center tracking-widest">THUYDUNG</h1>
+      {/* Loading overlay */}
+      <div className={`loading-overlay ${isLoading ? '' : 'loaded'}`}>
+        <div className="loading-logo">
+          <img src="/images/logo.png" alt="ThuyDung Logo" width={180} height={60} />
         </div>
       </div>
+
+      <main className="relative">
+        {/* Logo overlay - centered absolutely */}
+        <div 
+          className={`absolute top-0 left-0 w-full h-full z-50 flex items-center justify-center pointer-events-none transition-opacity duration-1000 ${isPageLoaded ? 'opacity-100' : 'opacity-0'}`}
+          style={{zIndex: 999}}
+        >
+          <h1 className="text-center playfair text-5xl md:text-6xl lg:text-7xl text-white font-light">
+            THUY DUNG
+          </h1>
+        </div>
+        
+        {/* Split Screen Layout */}
+        <div className="home-split-screen">
+          {/* Fashion & Accessories Section */}
+          <div 
+            className="home-split-section relative"
+            onMouseEnter={handleFashionMouseEnter}
+            onMouseLeave={handleFashionMouseLeave}
+          >
+            <div className="absolute inset-0 bg-black/40 z-10"></div>
+            <video 
+              ref={fashionVideoRef}
+              className="video-hover-play"
+              muted 
+              loop
+              playsInline
+              preload="metadata"
+              width="100%"
+              height="100%"
+              onError={(e) => console.error("Video error:", e)}
+            >
+              <source src="/videos/2.webm" type="video/webm" />
+              Your browser does not support the video tag.
+            </video>
+            <div className="home-split-content">
+              <h2 className="playfair text-xl md:text-2xl mb-4 animate-slide-up delay-300">THỜI TRANG NGƯỜI LỚN</h2>
+              <Link href="/thoi-trang-nguoi-lon" className="btn btn-light animate-fade-in delay-500">
+                XEM NGAY
+              </Link>
+            </div>
+          </div>
+          
+          {/* Fragrance & Beauty Section */}
+          <div 
+            className="home-split-section relative"
+            onMouseEnter={handleFragranceMouseEnter}
+            onMouseLeave={handleFragranceMouseLeave}
+          >
+            <div className="absolute inset-0 bg-black/40 z-10"></div>
+            <video 
+              ref={fragranceVideoRef}
+              className="video-hover-play"
+              muted 
+              loop
+              playsInline
+              preload="metadata"
+              width="100%"
+              height="100%"
+              onError={(e) => console.error("Video error:", e)}
+            >
+              <source src="/videos/4.mp4" type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+            <div className="home-split-content">
+              <h2 className="playfair text-xl md:text-2xl mb-4 animate-slide-up delay-300">THỜI TRANG TRẺ CON</h2>
+              <Link href="/thoi-trang-tre-con" className="btn btn-light animate-fade-in delay-500">
+                XEM NGAY
+              </Link>
+            </div>
+          </div>
+        </div>
+      </main>
 
       <Footer />
     </div>

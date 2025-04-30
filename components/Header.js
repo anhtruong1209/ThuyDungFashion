@@ -1,16 +1,19 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import { FiSearch, FiHeart, FiShoppingBag, FiUser, FiMenu, FiX, FiChevronDown } from 'react-icons/fi';
 
 export default function Header() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [activeDropdown, setActiveDropdown] = useState(null);
+  const [pageTransition, setPageTransition] = useState(false);
   const router = useRouter();
-  const isHomePage = router.pathname === '/';
-  
+
+  // Track scroll position to change header style
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 100) {
+      if (window.scrollY > 50) {
         setIsScrolled(true);
       } else {
         setIsScrolled(false);
@@ -20,138 +23,213 @@ export default function Header() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-  
+
+  // Handle page transitions for logo animation
+  useEffect(() => {
+    const handleRouteChangeStart = () => {
+      setPageTransition(true);
+    };
+    
+    const handleRouteChangeComplete = () => {
+      setIsMobileMenuOpen(false);
+      setActiveDropdown(null);
+      
+      // Reset page transition after animation completes
+      setTimeout(() => {
+        setPageTransition(false);
+      }, 600);
+    };
+
+    router.events.on('routeChangeStart', handleRouteChangeStart);
+    router.events.on('routeChangeComplete', handleRouteChangeComplete);
+    
+    return () => {
+      router.events.off('routeChangeStart', handleRouteChangeStart);
+      router.events.off('routeChangeComplete', handleRouteChangeComplete);
+    };
+  }, [router]);
+
   const toggleMobileMenu = () => {
-    setMobileMenuOpen(!mobileMenuOpen);
+    setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
-  const headerClass = isHomePage && !isScrolled && !mobileMenuOpen 
-    ? "fixed w-full z-50 transition-colors duration-300"
-    : "fixed w-full bg-white bg-opacity-95 border-b border-gray-200 z-50 transition-colors duration-300";
+  const handleDropdownToggle = (category) => {
+    setActiveDropdown(activeDropdown === category ? null : category);
+  };
+
+  // Define the categories and subcategories
+  const categories = {
+    women: ['Áo', 'Quần', 'Váy', 'Phụ kiện', 'Giày dép'],
+    men: ['Áo', 'Quần', 'Phụ kiện', 'Giày dép'],
+  };
 
   return (
-    <header className={headerClass}>
-      <div className="container-custom">
-        {/* Top navigation */}
-        <div className="py-4 flex justify-between items-center">
+    <header 
+      className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 ${
+        isScrolled ? 'bg-white text-black shadow-sm py-2' : 'bg-transparent text-white py-4'
+      }`}
+    >
+      <div className="container mx-auto px-4">
+        <div className="flex items-center justify-between h-16">
           {/* Mobile menu button */}
-          <button
-            className={`md:hidden ${isHomePage && !isScrolled ? 'text-white' : 'text-black'}`}
+          <button 
+            className="md:hidden text-2xl header-icon"
             onClick={toggleMobileMenu}
-            aria-label="Menu"
+            aria-label="Toggle mobile menu"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-            </svg>
+            {isMobileMenuOpen ? <FiX className="animate-scale-up" /> : <FiMenu className="animate-scale-up" />}
           </button>
 
-          {/* Logo */}
-          <div className="flex-1 flex justify-center md:justify-center">
-            <Link href="/" className={`playfair text-3xl font-medium tracking-wider ${isHomePage && !isScrolled ? 'text-white' : 'text-dior-black'}`}>
-              THUYDUNG
-            </Link>
-          </div>
+          {/* Left Navigation */}
+          <nav className="hidden md:flex space-x-8">
+            <div className="relative">
+              <button 
+                onClick={() => handleDropdownToggle('women')}
+                className={`nav-link flex items-center ${router.pathname.startsWith('/women') ? 'active' : ''} animate-fade-in`}
+              >
+                NỮ <FiChevronDown className={`ml-1 transition-transform duration-300 ${activeDropdown === 'women' ? 'rotate-180' : ''}`} size={14} />
+              </button>
+              {activeDropdown === 'women' && (
+                <div className="absolute top-full left-0 bg-white text-black shadow-md py-4 px-6 min-w-48 animate-slide-down">
+                  {categories.women.map((subcategory, index) => (
+                    <Link 
+                      key={subcategory}
+                      href={`/women/${subcategory.toLowerCase().replace(/-/g, '').replace(/\s+/g, '-')}`}
+                      className="block py-2 text-sm hover:text-gray-600 whitespace-nowrap animate-fade-in"
+                      style={{ animationDelay: `${index * 50}ms` }}
+                    >
+                      {subcategory}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+            
+            <div className="relative">
+              <button 
+                onClick={() => handleDropdownToggle('men')}
+                className={`nav-link flex items-center ${router.pathname.startsWith('/men') ? 'active' : ''} animate-fade-in delay-100`}
+              >
+                NAM <FiChevronDown className={`ml-1 transition-transform duration-300 ${activeDropdown === 'men' ? 'rotate-180' : ''}`} size={14} />
+              </button>
+              {activeDropdown === 'men' && (
+                <div className="absolute top-full left-0 bg-white text-black shadow-md py-4 px-6 min-w-48 animate-slide-down">
+                  {categories.men.map((subcategory, index) => (
+                    <Link 
+                      key={subcategory}
+                      href={`/men/${subcategory.toLowerCase().replace(/-/g, '').replace(/\s+/g, '-')}`}
+                      className="block py-2 text-sm hover:text-gray-600 whitespace-nowrap animate-fade-in"
+                      style={{ animationDelay: `${index * 50}ms` }}
+                    >
+                      {subcategory}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+          </nav>
 
-          {/* Right nav items */}
-          <div className="hidden md:flex items-center space-x-6">
-            <Link href="/search" className={isHomePage && !isScrolled ? 'text-white' : 'text-black'} aria-label="Search">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-              </svg>
+          {/* Logo (Center on all screens) */}
+          <Link href="/" className={`absolute left-1/2 transform -translate-x-1/2 playfair text-2xl tracking-widest font-light ${pageTransition ? 'logo-transition' : ''}`} style={{ top: '50%', transform: 'translate(-50%, -50%)' }}>
+            THUYDUNG
+          </Link>
+
+          {/* Right Icons - Hidden on mobile, visible on desktop */}
+          <div className="hidden md:flex items-center space-x-5">
+            <button className="header-icon animate-fade-in" aria-label="Search">
+              <FiSearch />
+            </button>
+            <Link href="/account" className="header-icon animate-fade-in delay-100" aria-label="Account">
+              <FiUser />
             </Link>
-            <Link href="/account" className={isHomePage && !isScrolled ? 'text-white' : 'text-black'} aria-label="Account">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-              </svg>
+            <Link href="/wishlist" className="header-icon animate-fade-in delay-200" aria-label="Wishlist">
+              <FiHeart />
             </Link>
-            <Link href="/wishlist" className={isHomePage && !isScrolled ? 'text-white' : 'text-black'} aria-label="Wishlist">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
-              </svg>
-            </Link>
-            <Link href="/cart" className={isHomePage && !isScrolled ? 'text-white' : 'text-black'} aria-label="Shopping Bag">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
-              </svg>
+            <Link href="/cart" className="header-icon animate-fade-in delay-300 relative" aria-label="Shopping Bag">
+              <FiShoppingBag />
+              <span className="absolute -top-1 -right-1 bg-black text-white text-xs rounded-full w-4 h-4 flex items-center justify-center animate-scale-up">0</span>
             </Link>
           </div>
+          
+          {/* Empty div to maintain flex layout on mobile */}
+          <div className="md:hidden"></div>
         </div>
+      </div>
 
-        {/* Main navigation - Desktop */}
-        <nav className={`hidden md:block py-3 ${isHomePage && !isScrolled ? 'nav-transparent' : ''}`}>
-          <ul className="flex justify-center space-x-10">
-            <li>
-              <Link href="/fashion-accessories" className={`nav-link ${isHomePage && !isScrolled ? 'text-white' : ''}`}>Fashion & Accessories</Link>
-            </li>
-            <li>
-              <Link href="/fragrance-beauty" className={`nav-link ${isHomePage && !isScrolled ? 'text-white' : ''}`}>Fragrance & Beauty</Link>
-            </li>
-            <li>
-              <Link href="/collections" className={`nav-link ${isHomePage && !isScrolled ? 'text-white' : ''}`}>Collections</Link>
-            </li>
-            <li>
-              <Link href="/news" className={`nav-link ${isHomePage && !isScrolled ? 'text-white' : ''}`}>News</Link>
-            </li>
-            <li>
-              <Link href="/about" className={`nav-link ${isHomePage && !isScrolled ? 'text-white' : ''}`}>About ThuyDung</Link>
-            </li>
-          </ul>
-        </nav>
-
-        {/* Mobile menu */}
-        {mobileMenuOpen && (
-          <div className="md:hidden py-4 bg-white border-t border-gray-200">
-            <ul className="space-y-4">
-              <li>
-                <Link href="/fashion-accessories" className="block px-4 py-2 nav-link">
-                  Fashion & Accessories
-                </Link>
-              </li>
-              <li>
-                <Link href="/fragrance-beauty" className="block px-4 py-2 nav-link">
-                  Fragrance & Beauty
-                </Link>
-              </li>
-              <li>
-                <Link href="/collections" className="block px-4 py-2 nav-link">
-                  Collections
-                </Link>
-              </li>
-              <li>
-                <Link href="/news" className="block px-4 py-2 nav-link">
-                  News
-                </Link>
-              </li>
-              <li>
-                <Link href="/about" className="block px-4 py-2 nav-link">
-                  About ThuyDung
-                </Link>
-              </li>
-              <li className="border-t border-gray-200 pt-4 mt-4 flex space-x-6 px-4">
-                <Link href="/search" className="text-black" aria-label="Search">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-                  </svg>
-                </Link>
-                <Link href="/account" className="text-black" aria-label="Account">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-                  </svg>
-                </Link>
-                <Link href="/wishlist" className="text-black" aria-label="Wishlist">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
-                  </svg>
-                </Link>
-                <Link href="/cart" className="text-black" aria-label="Shopping Bag">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
-                  </svg>
-                </Link>
-              </li>
-            </ul>
+      {/* Mobile Menu */}
+      <div className={`mobile-menu ${isMobileMenuOpen ? 'open' : ''}`}>
+        <nav className="flex flex-col space-y-6 p-8">
+          <div>
+            <button 
+              className={`nav-link-mobile flex items-center justify-between w-full ${router.pathname.startsWith('/women') ? 'active' : ''}`}
+              onClick={() => handleDropdownToggle('women-mobile')}
+            >
+              <span>NỮ</span>
+              <FiChevronDown className={`transition-transform duration-300 ${activeDropdown === 'women-mobile' ? 'rotate-180' : ''}`} />
+            </button>
+            {activeDropdown === 'women-mobile' && (
+              <div className="mt-4 ml-4 flex flex-col space-y-4 animate-slide-down">
+                {categories.women.map((subcategory) => (
+                  <Link 
+                    key={subcategory}
+                    href={`/women/${subcategory.toLowerCase().replace(/-/g, '').replace(/\s+/g, '-')}`}
+                    className="text-sm"
+                    onClick={toggleMobileMenu}
+                  >
+                    {subcategory}
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
-        )}
+          
+          <div>
+            <button 
+              className={`nav-link-mobile flex items-center justify-between w-full ${router.pathname.startsWith('/men') ? 'active' : ''}`}
+              onClick={() => handleDropdownToggle('men-mobile')}
+            >
+              <span>NAM</span>
+              <FiChevronDown className={`transition-transform duration-300 ${activeDropdown === 'men-mobile' ? 'rotate-180' : ''}`} />
+            </button>
+            {activeDropdown === 'men-mobile' && (
+              <div className="mt-4 ml-4 flex flex-col space-y-4 animate-slide-down">
+                {categories.men.map((subcategory) => (
+                  <Link 
+                    key={subcategory}
+                    href={`/men/${subcategory.toLowerCase().replace(/-/g, '').replace(/\s+/g, '-')}`}
+                    className="text-sm"
+                    onClick={toggleMobileMenu}
+                  >
+                    {subcategory}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+          
+          <Link href="/collections" className={`nav-link-mobile ${router.pathname === '/collections' ? 'active' : ''}`} onClick={toggleMobileMenu}>
+            BỘ SƯU TẬP
+          </Link>
+          <Link href="/about" className={`nav-link-mobile ${router.pathname === '/about' ? 'active' : ''}`} onClick={toggleMobileMenu}>
+            GIỚI THIỆU
+          </Link>
+          
+          {/* Added right navigation items to mobile menu */}
+          <div className="flex flex-col space-y-6 mt-6 border-t pt-6">
+            <Link href="/search" className="nav-link-mobile flex items-center" onClick={toggleMobileMenu}>
+              <FiSearch className="mr-3" /> Tìm kiếm
+            </Link>
+            <Link href="/account" className="nav-link-mobile flex items-center" onClick={toggleMobileMenu}>
+              <FiUser className="mr-3" /> Tài khoản
+            </Link>
+            <Link href="/wishlist" className="nav-link-mobile flex items-center" onClick={toggleMobileMenu}>
+              <FiHeart className="mr-3" /> Yêu thích
+            </Link>
+            <Link href="/cart" className="nav-link-mobile flex items-center" onClick={toggleMobileMenu}>
+              <FiShoppingBag className="mr-3" /> Giỏ hàng
+            </Link>
+          </div>
+        </nav>
       </div>
     </header>
   );

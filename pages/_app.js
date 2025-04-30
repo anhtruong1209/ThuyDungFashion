@@ -1,6 +1,6 @@
 import '../styles/globals.css';
-import { useRouter } from 'next/router';
 import Header from '../components/Header';
+import { useRouter } from 'next/router';
 import Head from 'next/head';
 
 function MyApp({ Component, pageProps }) {
@@ -11,8 +11,8 @@ function MyApp({ Component, pageProps }) {
     <>
       <Head>
         <title>ThuyDung Fashion</title>
-        <meta name="description" content="ThuyDung Fashion - Luxury fashion house" />
-        <link rel="icon" href="/favicon.ico" />
+        <meta name="description" content="ThuyDung Fashion - Thời trang cao cấp" />
+        <link rel="icon" href="/images/logo.png" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
       
